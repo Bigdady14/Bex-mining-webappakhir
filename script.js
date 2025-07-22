@@ -1,33 +1,32 @@
-const balanceEl = document.getElementById("balance");
-const mineBtn = document.getElementById("mineBtn");
 
-async function getUser() {
-  if (window.Telegram && Telegram.WebApp) {
-    await Telegram.WebApp.ready();
-    return Telegram.WebApp.initDataUnsafe.user;
-  }
-  return { id: "test_user", username: "test" };
+const wallet = "0xc3A9211b16c73A4f2C516b20658eC17c1D69d635";
+
+function mine() {
+    document.getElementById("status").innerText = "Mining in progress...";
+    fetch('http://127.0.0.1:5000/mine', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ address: wallet })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("status").innerText = "Mined Block #" + data.index;
+        updateBalance();
+    })
+    .catch(() => {
+        document.getElementById("status").innerText = "Error mining block.";
+    });
 }
 
-async function updateBalance(userId) {
-  const res = await fetch(`https://bex-mining-backend.vercel.app/balance?user_id=${userId}`);
-  const data = await res.json();
-  balanceEl.textContent = `Saldo: ${data.balance.toFixed(5)} BEX`;
+function updateBalance() {
+    fetch('http://127.0.0.1:5000/balance?address=' + wallet)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("balance").innerText = "BEX Balance: " + data.balance;
+    });
 }
 
-mineBtn.addEventListener("click", async () => {
-  const user = await getUser();
-  const res = await fetch("https://bex-mining-backend.vercel.app/mine", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: user.id, username: user.username })
-  });
-
-  const data = await res.json();
-  balanceEl.textContent = `Saldo: ${data.balance.toFixed(5)} BEX`;
-});
-
-(async () => {
-  const user = await getUser();
-  await updateBalance(user.id);
-})();
+// Initial balance load
+updateBalance();
