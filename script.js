@@ -1,3 +1,9 @@
+let tg = window.Telegram.WebApp;
+let user_id = tg.initDataUnsafe?.user?.id || null;
+
+if (user_id) {
+  console.log("Telegram ID:", user_id);
+}
 const wallet = "0xc3A9211b16c73A4f2C516b20658eC17c1D69d635";
 
 function mine() {
